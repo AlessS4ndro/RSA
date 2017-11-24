@@ -1,0 +1,30 @@
+#ifndef _ALEX_H_
+#define _ALEX_H_
+
+#include<NTL/ZZ.h>
+#include<iostream>
+
+using namespace NTL;
+using namespace std;
+
+template <typename T>
+T modulo(T ,T);
+
+template <typename T>
+T euclides(T,T);
+
+template <typename T>
+bool and_binari(T);
+
+//template <typename T>
+bool is_primo(ZZ );
+
+template <typename T>
+T exponenciacion_modular(T,T,T);
+string int_to_string(ZZ );
+int ZZ_to_int(ZZ );
+
+template <typename T>
+void euclides_extendido(T,T,T &,T &,T &);
+
+#endif

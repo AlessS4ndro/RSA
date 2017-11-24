@@ -1,0 +1,25 @@
+
+#include"rsa.h"
+
+int main(int argc,char* argv[])
+{
+  ZZ e,n;
+  e=atoi(argv[1]);
+  n=atoi(argv[2]);
+  // RSA receptor(atoi(argv[1]));
+  RSA emisor(e,n);
+  
+  
+  string mensajeCifrado;
+  mensajeCifrado=emisor.cifrar("a");
+  cout<<"el mensaje cifrado es: "<<mensajeCifrado<<endl;
+  
+  /*
+  ZZ claveCifrada;
+  cout<<"ingrese la clave cifrada: \n>"<<endl;
+  cin>>claveCifrada;
+  while(claveCifrada!=-69){
+    receptor.descifrar(claveCifrada);
+    cin>>claveCifrada;
+    }*/
+}

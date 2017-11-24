@@ -1,0 +1,19 @@
+#include "prototipos.h"
+#include "definiciones.h"
+#include <iostream>
+
+using namespace std;
+
+int main()
+{
+  ZZ n,m,mcd,x,y,e;
+	m=572;
+	e=29;
+	n=713;
+
+	
+	cout<<exponenciacion_modular(m,e,n)<<endl;
+        
+	return 0;
+}
+

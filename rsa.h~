@@ -1,0 +1,216 @@
+#include<NTL/ZZ.h>
+#include<fstream>
+#include<stdio.h>
+#include<stdlib.h>
+#include<iostream>
+
+using namespace NTL;
+using namespace std;
+
+class RSA
+{
+  static string alfabeto;
+  ZZ private_key;
+  ZZ n;
+  ZZ e;
+  int numeroBits;
+  //string divide_bloque(string ,int);
+  //string complete_bloque(string ,int);
+  
+  ZZ modulo_ZZ(ZZ ,ZZ);
+  ZZ euclides_ZZ(ZZ,ZZ);
+  bool is_primo(ZZ );
+  void generate_keys(ZZ &,ZZ &,ZZ &);
+  ZZ exponenciacion_modular(ZZ,ZZ,ZZ);
+  string int_to_string(ZZ );
+  int ZZ_to_int(ZZ );
+  void euclides_extendido_ZZ(ZZ,ZZ,ZZ &,ZZ &,ZZ &);
+  
+ public:
+  RSA(int);
+  RSA(ZZ e,ZZ n){this->n=n;this->e=e;}
+  string cifrar(string);
+  string descifrar(ZZ);
+  //ZZ ** resto_chino(ZZ **,ZZ);
+};
+
+ string RSA::alfabeto="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+RSA::RSA(int nbits)
+{
+  numeroBits=nbits;
+  ZZ p,q,fiN,d,x,y;
+  ZZ c[6];
+
+  generate_keys(p,q,e);
+
+  n=p*q;
+  fiN=(p-1)*(q-1);
+
+
+  euclides_extendido_ZZ(fiN,e,d,x,y); /////// hallamos la inversa de fiN
+  if(x<0){
+    if(fiN>e)x+=fiN;
+    else x+=e;
+  }
+  private_key=x;
+  c[0]=p;c[1]=q;c[2]=n;c[3]=fiN;c[4]=e;c[5]=private_key;
+  //generar_txt(c);
+}
+
+ZZ RSA::modulo_ZZ(ZZ value,ZZ modulo)
+{
+  ZZ cociente=value/modulo;
+
+  if(value>=0)
+    return value-cociente*modulo;
+  return modulo-(value*-1+cociente*modulo);
+}
+ZZ RSA::euclides_ZZ(ZZ a,ZZ b)
+{
+  if(b==0)
+    return a;
+  return euclides_ZZ(b,modulo_ZZ(a,b));
+}
+bool RSA::and_binari(ZZ n)
+{
+  ZZ cero;
+  cero=0;
+  if(n==cero)
+    return false;
+  return true;
+}
+void RSA::euclides_extendido_ZZ(ZZ a,ZZ b,ZZ &d,ZZ &x,ZZ &y)
+{
+  ZZ x1,y1;
+
+  if(b==0){
+    d=a;
+    x=1;
+    y=0;
+  }
+  else{
+    euclides_extendido_ZZ(b,modulo_ZZ(a,b),d,x,y);
+    x1= x;
+    y1=y;
+    x=y1;
+    y=x1-(a/b)*y1;
+  }
+}
+string RSA::int_to_string(ZZ number)
+{
+  string palabra;
+  char numeros[10]={'0','1','2','3','4','5','6','7','8','9'};
+  char temp;
+  int size;
+  ZZ diez;
+  diez=10;
+
+  while(number!=0){
+    palabra+=numeros[ZZ_to_int(modulo_ZZ(number,diez))];
+    number/=10;
+  }
+  size=palabra.length();
+  for (int i=0;i<size/2;i++){
+    temp=palabra[i];
+    palabra[i]=palabra[size-i-1];
+    palabra[size-i-1]=temp;
+  }
+  return palabra;
+}
+
+
+
+bool RSA::is_primo(ZZ number)
+{
+  ZZ i,raizCuadrada;
+  raizCuadrada=SqrRoot(number);
+  for(i=2;i<raizCuadrada+1;i++){
+    if(modulo_ZZ(number,i)==0)
+      return false;
+  }
+  if(number==0)
+    return false;
+  return true;
+}
+
+int RSA::ZZ_to_int(ZZ number)
+{////////// un prerequisito es que number sea de 4 bytes o menos
+  unsigned int sumador,crece;
+  ZZ conejo,creciente,i;
+  sumador=0;
+  creciente=1;
+  conejo=1;
+  crece=1;
+
+  for(i=1;i<NumBits(number)+1;i++){
+    creciente=conejo & number;
+    if(and_binari(creciente)){
+      sumador+=crece;
+    }
+    else creciente=conejo;
+    creciente<<=1;
+    conejo=conejo<<1;
+    crece<<=1;
+  }
+
+  return sumador;
+}
+ZZ RSA::exponenciacion_modular(ZZ e,ZZ n,ZZ m)
+{
+  ZZ elevado1,elevado2,resultado,dos;
+  dos=2;
+  elevado1=m;
+  elevado2=1;
+  resultado=1;
+
+  while(e!=0){
+    elevado1=elevado2=modulo_ZZ((elevado1*elevado2),n);
+    if(modulo_ZZ(e,dos)==1){
+      resultado=modulo_ZZ((resultado*elevado1),n);
+      e/=2;
+    }
+  }
+  return resultado;
+}
+void RSA::generate_keys(ZZ &p,ZZ &q,ZZ &e)
+{
+  ZZ fiN;
+  
+  do{
+    p=RandomLen_ZZ(numeroBits/2);cout<<"p es: "<<p<<endl; //p random y primo
+    q=RandomLen_ZZ(numeroBits/2);cout<<"q es: "<<q<<endl; //q random y primo
+  }while(!is_primo(p) || !is_primo(q));
+  fiN=(p-1)*(q-1);cout<<"fiN es : "<<fiN<<endl;
+  cout<<"n es: "<<p*q<<endl;
+  do{
+    e=RandomLen_ZZ(numeroBits); //e random y coprimo de fiN
+    e=modulo_ZZ(e,fiN); cout<<"e es : "<<e<<endl;
+  }while(euclides_ZZ(fiN,e)!=1);
+}
+string RSA::cifrar(string textoPlano)
+{
+  string mensajeCifrado;
+  ZZ posicion;
+  int size;
+  
+  size=textoPlano.length();
+  for(int i=0;i<size;i++){
+    cout<<"iteracion "<<i<<endl;
+    posicion=alfabeto.find(textoPlano[i]);
+    mensajeCifrado+=int_to_string(exponenciacion_modular(posicion,e,n));
+    
+  }
+  return mensajeCifrado;
+}
+string RSA::descifrar(ZZ clave)
+{
+  string mensajeDecifrado;
+  ZZ posicion;
+
+    posicion=clave;
+    cout<<exponenciacion_modular(posicion,e,n)<<endl;
+  
+  return mensajeDecifrado;
+}
+

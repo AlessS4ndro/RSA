@@ -1,0 +1,186 @@
+#include <NTL/ZZ.h>
+#include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include "prototipos.h"
+#include "definiciones.h"
+#include <iostream>
+
+using namespace NTL;
+using namespace std;
+
+class RSA
+{
+  ZZ privateKey;
+  ZZ n;
+  ZZ e;
+  int numeroBits;
+  ofstream texto;
+  void generate_keys(ZZ &,ZZ &,ZZ &);
+  //string divide_bloque(string ,int);
+  void generate_txt(ZZ *);
+  string aumentar_ceros(string ,int);
+  string completar_mensaje(string ,int);
+  string * generate_bloque(string ,int &,int );
+ public:
+  static string alfabeto;
+  RSA(int);
+  RSA(ZZ e,ZZ n){this->n=n;this->e=e;}
+  string cifrar(string);
+  string descifrar(string);
+  void set_key(ZZ key){privateKey=key;}
+  
+};
+
+ string RSA::alfabeto="abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+RSA::RSA(int nbits)
+{
+  numeroBits=nbits;
+  ZZ p,q,fiN,d,x,y;
+  ZZ c[6];
+
+  generate_keys(p,q,e);
+  n=p*q;
+  fiN=(p-1)*(q-1);
+
+  euclides_extendido(fiN,e,d,x,y); /////// hallamos la inversa de fiN
+  verificar_euclides(fiN,e,x,y);
+  privateKey=y;
+  c[0]=p;c[1]=q;c[2]=n;c[3]=fiN;c[4]=e;c[5]=privateKey;
+  generate_txt(c);
+}
+
+void RSA::generate_keys(ZZ &p,ZZ &q,ZZ &e)
+{
+  texto.open("datos.txt");
+  ZZ fiN;
+  
+  do{
+    p=RandomLen_ZZ(numeroBits/2);texto<<"provando p.. : "<<p<<endl; //p random y primo
+    q=RandomLen_ZZ(numeroBits/2);texto<<"provando q.. : "<<q<<endl; //q random y primo
+  }while(!is_primo(p) || !is_primo(q));
+  fiN=(p-1)*(q-1);texto<<"fiN es : "<<fiN<<endl;
+ texto <<"n es: "<<p*q<<endl;
+  do{
+    e=RandomLen_ZZ(numeroBits); //e random y coprimo de fiN
+    texto<<"probando e...  : "<<e<<endl;
+    e=modulo(e,fiN); 
+  }while(euclides(fiN,e)!=1);
+  texto<<"e es : "<<e<<endl;
+  texto.close();
+}
+string RSA::cifrar(string textoPlano)
+{
+  string mensajeCifrado;
+  string *bloques;
+  int nBloques;
+  ZZ temp;
+
+  textoPlano=completar_mensaje(textoPlano,alfabeto.length()-1);
+  cout<<textoPlano<<endl;
+  bloques=generate_bloque(textoPlano,nBloques,number_digits(n)-1);
+  for(int i=0;i<nBloques;i++){
+    temp=string_to_int(bloques[i]);
+    temp=exponenciacion_modular(temp,e,n);
+    cout<<"Ci "<<temp<<endl;
+    bloques[i]=num_to_string(temp);
+    mensajeCifrado+=aumentar_ceros(bloques[i],number_digits(n));
+  }
+  return mensajeCifrado;
+}
+string RSA::descifrar(string mensaje)
+{
+  string mensajeDecifrado;
+  string *resultado;
+  int nBloques;
+  int nDigitos=number_digits(n);
+  ZZ temp;
+  string *bloques=generate_bloque(mensaje,nBloques,nDigitos);
+  int max=number_digits(alfabeto.length()-1);// max pos de alfabeto
+
+  for(int i=0;i<nBloques;i++){
+    temp=string_to_int(bloques[i]);// convertimos a int
+    temp=exponenciacion_modular(temp,privateKey,n); // aplicamos
+    cout<<"Ci "<<temp<<endl;
+    bloques[i]=num_to_string(temp); // convertimos a string
+    mensajeDecifrado+=aumentar_ceros(bloques[i],number_digits(n)-1);
+  }
+  
+  bloques=generate_bloque(mensajeDecifrado,nBloques,max);
+  mensajeDecifrado="";
+  for(int i=0;i<nBloques;i++){
+    int pos=string_to_int(bloques[i]);
+    cout<<"pos "<<pos<<endl;
+    mensajeDecifrado+=alfabeto[pos];
+  }
+  return mensajeDecifrado;
+}
+
+void RSA::generate_txt(ZZ * claves)
+{
+  texto.open("datos.txt");
+  texto<<"p es: "<<claves[0]<<endl;
+  texto<<"q es: "<<claves[1]<<endl;
+  texto<<"n es: "<<claves[2]<<endl;
+  texto<<"fiN es: "<<claves[3]<<endl;
+  texto<<"e es: "<<claves[4]<<endl;
+  texto<<"claveprivada es:"<<claves[5]<<endl;
+  texto.close();
+}
+
+string RSA::completar_mensaje(string mensaje ,int n)
+{
+  int numeroDigitos=number_digits(n);
+  string caracter;
+  string bloque;
+  int posicion;
+  string cero="0";
+  string mensajeNuevo;
+
+  for(int i=0;i<mensaje.length();i++){
+    caracter=mensaje[i];
+    posicion=alfabeto.find(caracter);
+    bloque=num_to_string(posicion);
+    // aumentamos ceros al bloque
+    mensajeNuevo+=aumentar_ceros(bloque,numeroDigitos);
+  }
+  return mensajeNuevo;
+}
+string RSA::aumentar_ceros(string bloque,int numeroDigitos)
+{
+  string cero="0";
+  
+  while(bloque.length()<numeroDigitos){
+    cero+=bloque;
+    bloque=cero;
+    cero="0";
+  }
+  return bloque;
+  
+}
+string * RSA::generate_bloque(string mensaje,int &nBloques,int nDigitos)
+{
+  string bloque;
+  string *resultado;
+  int size=mensaje.length();
+  ZZ m;
+  
+  cout<<"size "<<size<<"\n"<<"nDigitos "<<nDigitos<<endl;
+  if(modulo(size,nDigitos)==0)resultado=new string[size/nDigitos];
+  else resultado=new string[size/nDigitos+1];
+  cout<<"nBloques "<<size/nDigitos<<endl;
+  nBloques=0;
+   for(int i=1;i<size+1;i++){
+    bloque+=mensaje[i-1]; // dividimos el bloque
+    if(modulo(i,nDigitos)==0 || i==size){ // cada n-1 ciframos
+      m=string_to_int(bloque);cout<<"bloque "<<bloque<<endl;
+      /// aplicamos cifrado
+      resultado[nBloques++]=bloque;
+      bloque="";
+    }
+   }
+   
+   return resultado;
+
+}

@@ -1,0 +1,6 @@
+p es: 13
+q es: 11
+n es: 143
+fiN es: 120
+e es: 103
+claveprivada es:7
