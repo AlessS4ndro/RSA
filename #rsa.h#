@@ -117,17 +117,7 @@ string RSA::descifrar(string mensaje)
   return mensajeDecifrado;
 }
 
-void RSA::generate_txt(ZZ * claves)
-{
-  texto.open("datos.txt");
-  texto<<"p es: "<<claves[0]<<endl;
-  texto<<"q es: "<<claves[1]<<endl;
-  texto<<"n es: "<<claves[2]<<endl;
-  texto<<"fiN es: "<<claves[3]<<endl;
-  texto<<"e es: "<<claves[4]<<endl;
-  texto<<"claveprivada es:"<<claves[5]<<endl;
-  texto.close();
-}
+
 
 // completas de acuerdo al maximo valor del alfabeto
 string RSA::completar_mensaje(string mensaje ,int n)
@@ -184,4 +174,16 @@ string * RSA::generate_bloque(string mensaje,int &nBloques,int nDigitos)
    
    return resultado;
 
+}
+
+void RSA::generate_txt(ZZ * claves)
+{
+  texto.open("datos.txt");
+  texto<<"p es: "<<claves[0]<<endl;
+  texto<<"q es: "<<claves[1]<<endl;
+  texto<<"n es: "<<claves[2]<<endl;
+  texto<<"fiN es: "<<claves[3]<<endl;
+  texto<<"e es: "<<claves[4]<<endl;
+  texto<<"claveprivada es:"<<claves[5]<<endl;
+  texto.close();
 }

@@ -5,6 +5,8 @@
 #include "prototipos.h"
 #include <math.h>
 #include <iostream>
+#include <fstream>
+#include <array>
 
 using namespace std;
 using namespace NTL;
@@ -202,7 +204,7 @@ T* resto_chino(T** sistema,int nfilas)
     P*=ps[i];
   }
   if(!is_coprimo(ps,nfilas))return NULL;
-  for(int i=0;i<nfilas;i++){
+for(int i=0;i<nfilas;i++){
     Ps[i]=P/ps[i];
     psprima=Ps[i];cout<<"Ps es: "<<Ps[i]<<endl;
     if(Ps[i]>ps[i])
@@ -238,5 +240,63 @@ void verificar_euclides(T a,T b,T &x,T &y)
   else mayor=a;  
   if(x<0)x+=mayor;
   if(y<0)y+=mayor;
+}
+
+template<typename U>
+  bool verificar_no_divisibilidad(U* &criba,U key,long int n)
+{
+  int iterador;
+  U mayor;
+  U menor;
+
+  
+  for(iterador=0;iterador<n;iterador++){
+    if(criba[iterador]<key){
+      mayor=key;
+      menor=criba[iterador];
+    }
+    else{
+      mayor=criba[iterador];
+      menor=key;
+    }
+    cout<<"ejecutabmos en modulo con "<<mayor<<" y  "<<menor<<endl;
+    if(modulo(mayor,menor)==0){
+      cout<<"cumplio modulo == 0 "<<mayor<<" "<<menor<<"\n";
+      return false;
+    }
+  }
+  return true;
+}
+ZZ * criba_eratostenes(ZZ n)
+{
+  ofstream archivo("criba.txt");
+  long int trillon;
+  ZZ primero;
+  ZZ ultimo;
+  long int nPrimos;
+  ZZ *criba ;
+  ZZ *primos;
+  ZZ iterador;
+  trillon=100000000;
+  criba=new ZZ[trillon]; // de trillon en trillon
+  criba[0]=2;archivo<<criba[0]<<endl;
+  criba[1]=3;archivo<<criba[1]<<endl;
+  nPrimos=2;
+  
+  for( long int i=0;i<trillon-1;i++){
+    primero=criba[i]*criba[i];
+    ultimo=criba[i+1]*criba[i+1];
+    cout<<primero<<" - "<<ultimo<<"\t";
+    for(iterador=primero+1;iterador<ultimo;iterador++){
+      cout<<"iterador del segundo for  "<<iterador<<endl;
+      if(verificar_no_divisibilidad(criba,iterador,i+1)){
+	cout<<"vamos a agregar  "<<iterador<<"   en pos  "<<nPrimos<<endl;
+	criba[nPrimos]=iterador;archivo<<iterador<<endl;
+	nPrimos++;
+      }
+    }
+  }
+  archivo.close();
+  return criba;      
 }
 #endif

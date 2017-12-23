@@ -3,16 +3,16 @@
 
 int main(int argc,char* argv[])
 {
-  
-  RSA receptor(8);
+  /*
+  RSA receptor(atoi(argv[1]));
   string mensajeCifrado;
 
   while(true){
     cout<<"mensaje a decifrar \n> ";
 	  getline(cin,mensajeCifrado);
 	  cout<<receptor.descifrar(mensajeCifrado)<<endl;
-  }
-      /*
+  }*/
+  /*    
   ZZ e,n;
   e=atoi(argv[1]);
   n=atoi(argv[2]);
@@ -28,5 +28,14 @@ int main(int argc,char* argv[])
       <<"x "<<x<<"\n"
       <<"y "<<y<<endl;
   */
+  cout<<"haber"<<endl;
+  ZZ n;
+  n=100;
+  ZZ *p;
+  cout<<"antes del arreglo"<<endl;
+  p=new ZZ[1000000];
+  cout<<"vamos a ejecutar"<<endl;
+  p=criba_eratostenes(n);
   return 0;
+  
 }

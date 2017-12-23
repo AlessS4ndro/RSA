@@ -1,6 +1,6 @@
-p es: 13
-q es: 11
-n es: 143
-fiN es: 120
-e es: 103
-claveprivada es:7
+p es: 31
+q es: 23
+n es: 713
+fiN es: 660
+e es: 301
+claveprivada es:421

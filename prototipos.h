@@ -45,4 +45,8 @@ T* resto_chino(T** ,int);
 template <typename T>
 int number_digits(T);
 
+template <typename U>
+  bool verificar_no_divisibilidad(U* & ,U  ,long int);
+
+ZZ * criba_eratostenes(ZZ);
 #endif
